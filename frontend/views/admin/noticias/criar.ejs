@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <%- include('../../partials/head', { title: 'Criar Notícia - E-DUCA' }) %>
+</head>
+<body>
+    <div class="d-flex">
+        <%- include('../partials/admin-sidebar', { currentPage: 'noticias' }) %>
+        
+        <div class="main-content p-4">
+            <h1 class="h3 mb-4">Criar Notícia</h1>
+
+            <% if (erro) { %>
+                <div class="alert alert-danger"><%= erro %></div>
+            <% } %>
+
+            <div class="card shadow">
+                <div class="card-body">
+                    <form action="/admin/noticias/criar" method="POST">
+                        <div class="mb-3">
+                            <label for="titulo" class="form-label">Título *</label>
+                            <input type="text" class="form-control" id="titulo" name="titulo" required value="<%= noticia.titulo || '' %>">
+                        </div>
+                        <div class="mb-3">
+                            <label for="conteudo" class="form-label">Conteúdo *</label>
+                            <textarea class="form-control" id="conteudo" name="conteudo" rows="10" required><%= noticia.conteudo || '' %></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-control" id="status" name="status">
+                                <option value="rascunho" <%= noticia.status === 'rascunho' ? 'selected' : '' %>>Rascunho</option>
+                                <option value="agendado" <%= noticia.status === 'agendado' ? 'selected' : '' %>>Agendado</option>
+                                <option value="publicado" <%= noticia.status === 'publicado' ? 'selected' : '' %>>Publicado</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="data_agendamento" class="form-label">Data de Agendamento</label>
+                            <input type="datetime-local" class="form-control" id="data_agendamento" name="data_agendamento">
+                        </div>
+                        <div class="mb-3">
+                            <label for="etapa_educacional" class="form-label">Etapa Educacional</label>
+                            <select class="form-control" id="etapa_educacional" name="etapa_educacional">
+                                <option value="">Selecione...</option>
+                                <option value="Educação Básica">Educação Básica</option>
+                                <option value="Ensino Fundamental">Ensino Fundamental</option>
+                                <option value="Ensino Médio">Ensino Médio</option>
+                                <option value="Educação Técnica">Educação Técnica</option>
+                                <option value="Educação Superior">Educação Superior</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                        <a href="/admin/noticias" class="btn btn-secondary">Cancelar</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <%- include('../../partials/footer') %>
+</body>
+</html>

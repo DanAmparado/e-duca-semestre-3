@@ -1,0 +1,25 @@
+<%- include('../../partials/head') %>
+<%- include('../../partials/navbar') %>
+<div class="container">
+    <h1>Notícias</h1>
+
+    <% if (etapaFiltro) { %>
+        <div class="alert alert-info">Filtrando por etapa: <%= etapaFiltro %></div>
+    <% } %>
+
+    <div class="row">
+        <% noticias.forEach(noticia => { %>
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><%= noticia.titulo %></h5>
+                        <p class="card-text"><%= noticia.conteudo.substring(0, 150) %>...</p>
+                        <p class="text-muted"><small>Publicado em: <%= noticia.data_publicacao.toLocaleDateString() %></small></p>
+                        <a href="/noticias/<%= noticia.id %>" class="btn btn-primary">Leia mais</a>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+</div>
+<%- include('../../partials/footer') %>

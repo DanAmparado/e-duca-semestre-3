@@ -20,7 +20,6 @@ const authController = {
         try {
             const { email, senha, confirmar_senha, cidade, estado, etapa_preferida } = req.body;
             
-            // Validações básicas
             if (senha !== confirmar_senha) {
                 return res.redirect('/auth/cadastro?erro=Senhas não coincidem');
             }
@@ -32,11 +31,11 @@ const authController = {
             console.error('Erro no cadastro:', error);
             let mensagemErro = 'Erro ao criar conta';
             
-            if (error.code === 'ER_DUP_ENTRY') {
+            if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
                 mensagemErro = 'Este email já está cadastrado';
             }
             
-            res.redirect('/auth/cadastro?erro=' + mensagemErro);
+            res.redirect('/auth/cadastro?erro=' + encodeURIComponent(mensagemErro));
         }
     },
 
@@ -54,7 +53,6 @@ const authController = {
                 return res.redirect('/auth/login?erro=Email ou senha incorretos');
             }
 
-            // Criar sessão
             req.session.user = {
                 id: usuario.id,
                 email: usuario.email,
@@ -62,7 +60,8 @@ const authController = {
                 estado: usuario.estado,
                 etapa_preferida: usuario.etapa_preferida,
                 is_admin: usuario.is_admin || false,
-                nivel_acesso: usuario.nivel_acesso || 'editor'
+                tipo: usuario.tipo,
+                nivel_acesso: usuario.tipo
             };
 
             res.redirect('/');

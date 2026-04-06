@@ -8,61 +8,63 @@
         <%- include('../partials/admin-sidebar', { currentPage: 'noticias' }) %>
         
         <div class="main-content p-4">
-            <div class="container-fluid">
-                <h1 class="h3 mb-4">Gerenciar Notícias</h1>
-                
-                <div class="alert alert-info">
-                    <h5><i class="bi bi-info-circle me-2"></i>Sistema de Notícias em Desenvolvimento</h5>
-                    <p class="mb-0">Esta funcionalidade será implementada na próxima versão do sistema.</p>
-                </div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">Gerenciar Notícias</h1>
+                <a href="/admin/noticias/criar" class="btn btn-success">Nova Notícia</a>
+            </div>
 
-                <div class="card shadow">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 fw-bold text-primary">Próximas Funcionalidades</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="row text-center">
-                            <div class="col-md-3 mb-3">
-                                <div class="text-primary">
-                                    <i class="bi bi-plus-circle fs-1 mb-2"></i>
-                                </div>
-                                <h6>Criar Notícias</h6>
-                                <small class="text-muted">Publicar conteúdo educativo</small>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <div class="text-success">
-                                    <i class="bi bi-calendar-event fs-1 mb-2"></i>
-                                </div>
-                                <h6>Agendamento</h6>
-                                <small class="text-muted">Programar publicações</small>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <div class="text-warning">
-                                    <i class="bi bi-image fs-1 mb-2"></i>
-                                </div>
-                                <h6>Multimídia</h6>
-                                <small class="text-muted">Imagens e vídeos</small>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <div class="text-info">
-                                    <i class="bi bi-tags fs-1 mb-2"></i>
-                                </div>
-                                <h6>Categorias</h6>
-                                <small class="text-muted">Organização por temas</small>
-                            </div>
-                        </div>
-                    </div>
+            <% if (success && success.length) { %>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <%= success %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
+            <% } %>
+            <% if (error && error.length) { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <%= error %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <% } %>
 
-                <div class="text-center mt-4">
-                    <a href="/admin/dashboard" class="btn btn-primary">
-                        <i class="bi bi-arrow-left me-1"></i> Voltar ao Dashboard
-                    </a>
+            <div class="card shadow">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr><th>ID</th><th>Título</th><th>Status</th><th>Publicação</th><th>Ações</th></tr>
+                            </thead>
+                            <tbody>
+                                <% noticias.forEach(noticia => { %>
+                                <tr>
+                                    <td><%= noticia.id %></td>
+                                    <td><%= noticia.titulo %></td>
+                                    <td><span class="badge bg-secondary"><%= noticia.status %></span></td>
+                                    <td><%= noticia.data_publicacao ? noticia.data_publicacao.toLocaleDateString('pt-BR') : '-' %></td>
+                                    <td>
+                                        <a href="/admin/noticias/editar/<%= noticia.id %>" class="btn btn-sm btn-primary">Editar</a>
+                                        <% if (noticia.status !== 'publicado') { %>
+                                            <form action="/admin/noticias/<%= noticia.id %>/publicar" method="POST" style="display:inline;">
+                                                <button class="btn btn-sm btn-success">Publicar</button>
+                                            </form>
+                                        <% } %>
+                                        <% if (noticia.status !== 'arquivado') { %>
+                                            <form action="/admin/noticias/<%= noticia.id %>/arquivar" method="POST" style="display:inline;">
+                                                <button class="btn btn-sm btn-warning">Arquivar</button>
+                                            </form>
+                                        <% } %>
+                                        <form action="/admin/noticias/excluir/<%= noticia.id %>" method="POST" style="display:inline;" onsubmit="return confirm('Excluir permanentemente?')">
+                                            <button class="btn btn-sm btn-danger">Excluir</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
     <%- include('../../partials/footer') %>
 </body>
 </html>

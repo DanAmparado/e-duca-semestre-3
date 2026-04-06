@@ -1,12 +1,11 @@
 const express = require('express');
 const router = express.Router();
+const noticiasController = require('../controllers/noticiasController');
 
-router.get('/', (req, res) => {
-    res.render('pages/noticias', {
-        user: req.session.user,
-        title: 'Notícias - E-DUCA',
-        noticias: [] // Placeholder
-    });
+router.get('/', noticiasController.listarTodos);
+router.get('/:id', noticiasController.detalhesNoticia);
+router.get('/teste', (req, res) => {
+    res.send('Rota de teste funcionando');
 });
 
 module.exports = router;

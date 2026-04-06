@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  email           String    @unique
+  senha           String
+  cidade          String?
+  estado          String?
+  etapa_preferida String?
+  data_cadastro   DateTime  @default(now()) @map("data_cadastro")
+  data_atualizacao DateTime @updatedAt @map("data_atualizacao")
+  is_admin        Boolean   @default(false)
+  tipo            String    @default("usuario") // usuario, editor, moderador, superadmin
+  ultimo_login    DateTime?
+
+  recursos        Recurso[]
+  noticias        Noticia[]
+  backups         RecursoBackup[]
+  logs            SistemaLog[]
+}
+
+model Recurso {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  titulo          String
+  descricao       String?
+  link_externo    String?
+  etapa           String
+  ativo           Boolean   @default(true)
+  aprovado        Boolean   @default(false)
+  data_moderacao  DateTime?
+  autor_id        String    @db.ObjectId
+  data_criacao    DateTime  @default(now()) @map("data_criacao")
+  data_atualizacao DateTime @updatedAt @map("data_atualizacao")
+
+  autor           Usuario   @relation(fields: [autor_id], references: [id])
+  backups         RecursoBackup[]
+}
+
+model Noticia {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  titulo            String
+  conteudo          String
+  status            String    @default("rascunho") // rascunho, agendado, publicado, arquivado
+  data_agendamento  DateTime?
+  etapa_educacional String?
+  autor_id          String    @db.ObjectId
+  data_publicacao   DateTime  @default(now()) @map("data_publicacao")
+  data_atualizacao  DateTime  @updatedAt @map("data_atualizacao")
+
+  autor             Usuario   @relation(fields: [autor_id], references: [id])
+}
+
+model RecursoBackup {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  recurso_id       String   @db.ObjectId
+  dados_anteriores Json
+  usuario_id       String   @db.ObjectId
+  motivo           String   // moderacao, exclusao, edicao, rollback
+  data_backup      DateTime @default(now())
+
+  recurso          Recurso  @relation(fields: [recurso_id], references: [id])
+  usuario          Usuario  @relation(fields: [usuario_id], references: [id])
+}
+
+model SistemaLog {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  tipo_log    String   // admin, seguranca, login, backup, permissao
+  usuario_id  String   @db.ObjectId
+  acao        String
+  descricao   String?
+  ip_address  String?
+  user_agent  String?
+  metadata    Json?
+  data_log    DateTime @default(now())
+
+  usuario     Usuario  @relation(fields: [usuario_id], references: [id])
+}

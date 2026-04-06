@@ -1,29 +1,24 @@
-const db = require('../config/database');
+const Recurso = require('../models/Recurso');
 
 const recursosController = {
-    // Listar todos os recursos (para página geral)
-    listarTodos: (req, res) => {
-        const sql = 'SELECT * FROM recursos WHERE ativo = true ORDER BY titulo';
-        
-        db.query(sql, (err, results) => {
-            if (err) {
-                console.error('Erro ao buscar recursos:', err);
-                return res.status(500).render('pages/erro', { 
-                    erro: 'Erro interno do servidor',
-                    user: req.session.user 
-                });
-            }
-            
+    listarTodos: async (req, res) => {
+        try {
+            const recursos = await Recurso.buscarTodos(true);
             res.render('pages/recursos/lista', {
                 user: req.session.user,
-                recursos: results,
+                recursos,
                 titulo: 'Todos os Recursos Educacionais'
             });
-        });
+        } catch (error) {
+            console.error('Erro ao buscar recursos:', error);
+            res.status(500).render('pages/erro', {
+                erro: 'Erro interno do servidor',
+                user: req.session.user
+            });
+        }
     },
 
-    // Listar recursos por etapa
-    listarPorEtapa: (req, res) => {
+    listarPorEtapa: async (req, res) => {
         const etapa = req.params.etapa;
         
         const etapasMap = {
@@ -43,18 +38,8 @@ const recursosController = {
             });
         }
         
-        const sql = 'SELECT * FROM recursos WHERE ativo = true AND etapa LIKE ? ORDER BY titulo';
-        const parametros = [`%${etapaBanco}%`];
-        
-        db.query(sql, parametros, (err, results) => {
-            if (err) {
-                console.error('Erro ao buscar recursos por etapa:', err);
-                return res.status(500).render('pages/erro', {
-                    erro: 'Erro interno do servidor',
-                    user: req.session.user
-                });
-            }
-
+        try {
+            const recursos = await Recurso.buscarPorEtapa(etapaBanco, true);
             const titulos = {
                 'basica': 'Educação Básica',
                 'fundamental': 'Ensino Fundamental', 
@@ -65,99 +50,85 @@ const recursosController = {
 
             res.render('pages/recursos/lista', {
                 user: req.session.user,
-                recursos: results,
-                etapa: etapa,
+                recursos,
+                etapa,
                 titulo: titulos[etapa] || `Recursos Educacionais`
             });
-        });
+        } catch (error) {
+            console.error('Erro ao buscar recursos por etapa:', error);
+            res.status(500).render('pages/erro', {
+                erro: 'Erro interno do servidor',
+                user: req.session.user
+            });
+        }
     },
 
-    // Buscar recursos por termo
-    buscarRecursos: (req, res) => {
+    buscarRecursos: async (req, res) => {
         const termo = req.query.q;
         
         if (!termo || termo.trim() === '') {
             return res.redirect('/recursos');
         }
 
-        const sql = `
-            SELECT * FROM recursos 
-            WHERE ativo = true 
-            AND (titulo LIKE ? OR descricao LIKE ? OR etapa LIKE ?)
-            ORDER BY titulo
-        `;
-        
-        const parametros = [`%${termo}%`, `%${termo}%`, `%${termo}%`];
-        
-        db.query(sql, parametros, (err, results) => {
-            if (err) {
-                console.error('Erro na busca:', err);
-                return res.status(500).render('pages/erro', {
-                    erro: 'Erro interno do servidor',
-                    user: req.session.user
-                });
-            }
-
+        try {
+            const recursos = await Recurso.buscarPorTermo(termo, true);
             res.render('pages/recursos/busca', {
                 user: req.session.user,
-                recursos: results,
-                termo: termo,
-                total: results.length
+                recursos,
+                termo,
+                total: recursos.length
             });
-        });
+        } catch (error) {
+            console.error('Erro na busca:', error);
+            res.status(500).render('pages/erro', {
+                erro: 'Erro interno do servidor',
+                user: req.session.user
+            });
+        }
     },
 
-    // Detalhes de um recurso específico
-    detalhesRecurso: (req, res) => {
+    detalhesRecurso: async (req, res) => {
         const id = req.params.id;
         
-        const sql = 'SELECT * FROM recursos WHERE id = ? AND ativo = true';
-        
-        db.query(sql, [id], (err, results) => {
-            if (err) {
-                console.error('Erro ao buscar recurso:', err);
-                return res.status(500).render('pages/erro', {
-                    erro: 'Erro interno do servidor',
-                    user: req.session.user
-                });
-            }
-
-            if (results.length === 0) {
+        try {
+            const recurso = await Recurso.buscarPorId(id);
+            if (!recurso || !recurso.ativo) {
                 return res.status(404).render('pages/erro', {
                     erro: 'Recurso não encontrado',
                     user: req.session.user
                 });
             }
-
             res.render('pages/recursos/detalhes', {
                 user: req.session.user,
-                recurso: results[0]
+                recurso
             });
-        });
+        } catch (error) {
+            console.error('Erro ao buscar recurso:', error);
+            res.status(500).render('pages/erro', {
+                erro: 'Erro interno do servidor',
+                user: req.session.user
+            });
+        }
     },
 
-    // Página de administração de recursos
-    adminListar: (req, res) => {
+    adminListar: async (req, res) => {
         if (!req.session.user) {
             return res.redirect('/auth/login');
         }
 
-        const sql = 'SELECT * FROM recursos ORDER BY data_criacao DESC';
-        
-        db.query(sql, (err, results) => {
-            if (err) {
-                console.error('Erro ao buscar recursos para admin:', err);
-                return res.status(500).render('pages/erro', {
-                    erro: 'Erro interno do servidor',
-                    user: req.session.user
-                });
-            }
-
+        try {
+            const recursos = await Recurso.buscarTodos(false);
             res.render('pages/admin/recursos', {
                 user: req.session.user,
-                recursos: results
+                recursos
             });
-        });
+        } catch (error) {
+            console.error('Erro ao buscar recursos para admin:', error);
+            res.status(500).render('pages/erro', {
+                erro: 'Erro interno do servidor',
+                user: req.session.user
+            });
+        }
     }
 };
 

@@ -1,42 +1,73 @@
-const db = require('../config/database');
+const prisma = require('../lib/prisma');
 const bcrypt = require('bcrypt');
 
 class Usuario {
     static async criar(usuario) {
-        const hashedPassword = await bcrypt.hash(usuario.senha, 10);
-        
-        return new Promise((resolve, reject) => {
-            const sql = 'INSERT INTO usuarios (email, senha, cidade, estado, etapa_preferida) VALUES (?, ?, ?, ?, ?)';
-            db.query(sql, [
-                usuario.email, 
-                hashedPassword, 
-                usuario.cidade, 
-                usuario.estado, 
-                usuario.etapa_preferida
-            ], (err, result) => {
-                if (err) reject(err);
-                else resolve(result);
+        try {
+            const hashedPassword = await bcrypt.hash(usuario.senha, 10);
+            const novoUsuario = await prisma.usuario.create({
+                data: {
+                    email: usuario.email,
+                    senha: hashedPassword,
+                    cidade: usuario.cidade || null,
+                    estado: usuario.estado || null,
+                    etapa_preferida: usuario.etapa_preferida || null,
+
+                }
             });
-        });
+            return novoUsuario;
+        } catch (error) {
+            console.error('Erro em Usuario.criar:', error);
+            throw error;
+        }
     }
 
     static async buscarPorEmail(email) {
-        return new Promise((resolve, reject) => {
-            const sql = 'SELECT * FROM usuarios WHERE email = ?';
-            
-            db.query(sql, [email], (err, results) => {
-                if (err) {
-                    console.error('Erro ao buscar usuário por email:', err);
-                    reject(err);
-                } else {
-                    resolve(results[0]);
-                }
+        try {
+            const usuario = await prisma.usuario.findUnique({
+                where: { email }
             });
-        });
+            return usuario;
+        } catch (error) {
+            console.error('Erro em Usuario.buscarPorEmail:', error);
+            throw error;
+        }
     }
 
     static async validarSenha(senha, senhaHash) {
         return await bcrypt.compare(senha, senhaHash);
+    }
+
+    static async contar(filtro = {}) {
+        return await prisma.usuario.count({ where: filtro });
+    }
+
+    static async contarAdmins() {
+        return await prisma.usuario.count({ where: { is_admin: true } });
+    }
+
+    static async buscarRecentes(dias = 7, limit = 5) {
+        const dataLimite = new Date();
+        dataLimite.setDate(dataLimite.getDate() - dias);
+        return await prisma.usuario.findMany({
+            where: { data_cadastro: { gte: dataLimite } },
+            orderBy: { data_cadastro: 'desc' },
+            take: limit
+        });
+    }
+
+    static async listarPaginado(limit, offset, orderBy = { data_cadastro: 'desc' }) {
+        const usuarios = await prisma.usuario.findMany({
+            skip: offset,
+            take: limit,
+            orderBy
+        });
+        const total = await prisma.usuario.count();
+        return { usuarios, total };
+    }
+
+    static async buscarTodos(filtro = {}, orderBy = { data_cadastro: 'desc' }) {
+        return await prisma.usuario.findMany({ where: filtro, orderBy });
     }
 }
 

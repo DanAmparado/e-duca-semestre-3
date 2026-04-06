@@ -1,4 +1,5 @@
-const db = require('../config/database');
+const Usuario = require('../models/Usuario');
+const Recurso = require('../models/Recurso');
 
 const usuariosController = {
     perfil: (req, res) => {
@@ -8,7 +9,6 @@ const usuariosController = {
         });
     },
 
-    //Formulário de edição
     formularioEditarPerfil: (req, res) => {
         res.render('pages/perfil/editar', {
             user: req.session.user,
@@ -16,59 +16,54 @@ const usuariosController = {
         });
     },
 
-    atualizarPerfil: (req, res) => {
+    atualizarPerfil: async (req, res) => {
         const { cidade, estado, etapa_preferida } = req.body;
         const userId = req.session.user.id;
 
-        const sql = 'UPDATE usuarios SET cidade = ?, estado = ?, etapa_preferida = ? WHERE id = ?';
-        
-        db.query(sql, [cidade, estado, etapa_preferida, userId], (err, result) => {
-            if (err) {
-                console.error('Erro ao atualizar perfil:', err);
-                //Redirecionar para o formulário com erro
-                return res.redirect('/perfil/editar?erro=Erro ao atualizar perfil');
-            }
+        try {
+            await Usuario.atualizar(userId, {
+                cidade: cidade || null,
+                estado: estado || null,
+                etapa_preferida: etapa_preferida || null
+            });
 
-            // Atualizar sessão
             req.session.user.cidade = cidade;
             req.session.user.estado = estado;
             req.session.user.etapa_preferida = etapa_preferida;
 
-            //Redirecionar para o perfil com sucesso
             res.redirect('/perfil?sucesso=Perfil atualizado com sucesso!');
-        });
+        } catch (error) {
+            console.error('Erro ao atualizar perfil:', error);
+            res.redirect('/perfil/editar?erro=Erro ao atualizar perfil');
+        }
     },
 
-    recomendacoes: (req, res) => {
+    recomendacoes: async (req, res) => {
         const user = req.session.user;
-        
+        if (!user) {
+            return res.redirect('/auth/login');
+        }
+
         let etapaFiltro = user.etapa_preferida || 'Superior';
         
-        const sql = `
-            SELECT * FROM recursos 
-            WHERE ativo = 1 
-            AND etapa LIKE ?
-            ORDER BY data_criacao DESC
-            LIMIT 10
-        `;
-
-        db.query(sql, [`%${etapaFiltro}%`], (err, recursos) => {
-            if (err) {
-                console.error('Erro ao buscar recomendações:', err);
-                return res.status(500).render('pages/erro', {
-                    erro: 'Erro ao carregar recomendações',
-                    user: user
-                });
-            }
+        try {
+            const recursos = await Recurso.buscarPorEtapa(etapaFiltro, true);
+            const recursosLimitados = recursos.slice(0, 10);
 
             res.render('pages/recomendacoes/para-voce', {
                 user: user,
-                recursos: recursos,
+                recursos: recursosLimitados,
                 temPreferencia: !!user.etapa_preferida,
                 etapaPreferida: user.etapa_preferida,
                 title: 'Para Você - E-DUCA'
             });
-        });
+        } catch (error) {
+            console.error('Erro ao buscar recomendações:', error);
+            res.status(500).render('pages/erro', {
+                erro: 'Erro ao carregar recomendações',
+                user: user
+            });
+        }
     }
 };
 

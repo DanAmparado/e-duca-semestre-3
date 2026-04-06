@@ -1,0 +1,72 @@
+PLANO DE ATAQUE – PROJETO E-DUCA (3º SEMESTRE)
+
+Contexto:
+- Projeto original desenvolvido no 2º semestre com MySQL, Express, EJS.
+- Agora no 3º semestre, devemos evoluir para:
+  * Banco de dados não relacional (MongoDB) usando Prisma.
+  * Separar frontend e backend, adotando um framework frontend (React ou Vue).
+  * Manter todas as funcionalidades existentes.
+  * Atender disciplinas: Gestão Ágil de Projetos, Banco de Dados Não Relacional, IHC.
+- Data de entrega final: 26 de junho de 2026.
+
+Equipe:
+- Daniel: desenvolvimento (backend, frontend, integração)
+- Victor: documentação (técnica, IHC, testes, commits)
+
+Cronograma (12 semanas):
+
+Semana 1-2: Levantamento e planejamento
+- Mapear funcionalidades existentes e pendências.
+- Definir stack final (React + Vite ou Vue).
+- Victor: documentar requisitos, criar backlog no GitHub Projects.
+- Daniel: configurar MongoDB Atlas, instalar Prisma, preparar ambiente.
+
+Semana 3-4: Modelagem e migração de dados
+- Criar schema Prisma para MongoDB (usuarios, recursos, sistema_logs, recursos_backup).
+- Daniel: reescrever models com Prisma Client; adaptar controllers.
+- Victor: documentar modelagem NoSQL.
+
+Semana 5-6: Separação do frontend (API)
+- Criar rotas de API (JSON) no Express (ex: /api/auth, /api/recursos).
+- Implementar autenticação JWT.
+- Victor: documentar API com Swagger/OpenAPI.
+
+Semana 7-9: Desenvolvimento do frontend com framework
+- Criar projeto frontend (React + Vite).
+- Daniel: construir páginas (login, cadastro, listagem de recursos, perfil, painel admin).
+- Consumir a API.
+- Victor: revisar interfaces baseado nos artefatos de IHC (personas, wireframes).
+
+Semana 10: Finalização e integração
+- Ajustar detalhes e corrigir bugs.
+- Garantir que todas as funcionalidades do 2º semestre estejam presentes.
+- Victor: preparar README, manual de instalação e guias.
+
+Semana 11: Testes e validação
+- Testes manuais e de regressão.
+- Victor: elaborar plano de testes e registrar resultados.
+- Preparar ambiente de produção (se necessário).
+
+Semana 12: Entrega final
+- Gravar vídeo de demonstração (máx 5 min, ambos participam).
+- Subir código final no GitHub (organização FatecFranca).
+- Preencher formulário de entrega.
+
+Entregáveis obrigatórios:
+- Código fonte no GitHub (todos os membros com commits).
+- README com instruções de instalação e execução.
+- Documentação da API (Swagger).
+- Artefatos de IHC (briefing, personas, wireframes, protótipo).
+- Script de seed para dados de teste.
+- Vídeo de demonstração público no YouTube.
+
+Observações:
+- O repositório deve estar na organização FatecFranca.
+- O projeto deve estar funcional, com backend e frontend integrados, usando MongoDB Atlas.
+- A disciplina de Gestão Ágil de Projetos exige uso de metodologia ágil – manter backlog e sprints no GitHub Projects.
+- A disciplina de IHC exige os artefatos mencionados; Victor ficará responsável por produzi-los e alinhar com o frontend final.
+
+Próximos passos imediatos:
+1. Daniel: criar branch feature/mongodb-prisma, configurar Prisma e MongoDB Atlas.
+2. Victor: iniciar documentação (pasta /docs), criar backlog e iniciar artefatos de IHC.
+3. Ambos: decidir o framework frontend (Recomendação: React + Vite).

@@ -1,7 +1,7 @@
-const db = require('../config/database');
+const Recurso = require('../models/Recurso');
 
 const recomendacoesController = {
-    listarRecomendados: (req, res) => {
+    listarRecomendados: async (req, res) => {
         if (!req.session.user) {
             return res.redirect('/auth/login');
         }
@@ -11,50 +11,30 @@ const recomendacoesController = {
         console.log('🔍 DEBUG - Buscando recomendações para:', user.email);
         console.log('🔍 DEBUG - Etapa preferida:', user.etapa_preferida);
         
-        let sql;
-        let parametros = [];
+        try {
+            let recursos;
+            const limit = user.etapa_preferida ? 20 : 15;
 
-        if (user.etapa_preferida) {
-            //Encontrar recursos que contenham a etapa do usuário
-            sql = `
-                SELECT * FROM recursos 
-                WHERE ativo = 1 
-                AND (
-                    etapa = ? 
-                    OR etapa LIKE ? 
-                    OR etapa LIKE ? 
-                    OR etapa LIKE ?
-                )
-                ORDER BY data_criacao DESC
-                LIMIT 20
-            `;
-            parametros = [
-                user.etapa_preferida,
-                `${user.etapa_preferida},%`,
-                `%,${user.etapa_preferida},%`,
-                `%,${user.etapa_preferida}`
-            ];
-        } else {
-            // Usuário sem preferência
-            sql = 'SELECT * FROM recursos WHERE ativo = 1 ORDER BY data_criacao DESC LIMIT 15';
-        }
-
-        db.query(sql, parametros, (err, results) => {
-            if (err) {
-                console.error('Erro ao buscar recomendações:', err);
-                return res.status(500).render('pages/erro', {
-                    erro: 'Erro interno do servidor',
-                    user: req.session.user
-                });
+            if (user.etapa_preferida) {
+                recursos = await Recurso.buscarPorEtapa(user.etapa_preferida, true);
+                if (recursos.length > limit) recursos = recursos.slice(0, limit);
+            } else {
+                recursos = await Recurso.buscarTodos(true, limit, 0);
             }
             
             res.render('pages/recomendacoes/para-voce', {
                 user: req.session.user,
-                recursos: results,
+                recursos: recursos,
                 temPreferencia: !!user.etapa_preferida,
                 etapaPreferida: user.etapa_preferida
             });
-        });
+        } catch (error) {
+            console.error('Erro ao buscar recomendações:', error);
+            res.status(500).render('pages/erro', {
+                erro: 'Erro interno do servidor',
+                user: req.session.user
+            });
+        }
     }
 };
 

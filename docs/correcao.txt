@@ -1,0 +1,2 @@
+Favoritos de Recursos ao invés de recursos backup (Relacionamento de recurso com usuário)
+corrigir as setinhas e a caixa do diagrama

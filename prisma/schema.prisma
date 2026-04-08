@@ -15,39 +15,42 @@ datasource db {
 }
 
 model Usuario {
-  id              String    @id @default(auto()) @map("_id") @db.ObjectId
-  email           String    @unique
-  senha           String
-  cidade          String?
-  estado          String?
-  etapa_preferida String?
-  data_cadastro   DateTime  @default(now()) @map("data_cadastro")
-  data_atualizacao DateTime @updatedAt @map("data_atualizacao")
-  is_admin        Boolean   @default(false)
-  tipo            String    @default("usuario") // usuario, editor, moderador, superadmin
-  ultimo_login    DateTime?
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  email            String    @unique
+  senha            String
+  cidade           String?
+  estado           String?
+  etapa_preferida  String?
+  data_cadastro    DateTime  @default(now()) @map("data_cadastro")
+  data_atualizacao DateTime  @updatedAt @map("data_atualizacao")
+  is_admin         Boolean   @default(false)
+  tipo             String    @default("usuario") // usuario, editor, moderador, superadmin
+  ultimo_login     DateTime?
 
-  recursos        Recurso[]
-  noticias        Noticia[]
-  backups         RecursoBackup[]
-  logs            SistemaLog[]
+  recursos  Recurso[]
+  noticias  Noticia[]
+  backups   RecursoBackup[]
+  logs      SistemaLog[]
+  favoritos Favorito[]
 }
 
 model Recurso {
-  id              String    @id @default(auto()) @map("_id") @db.ObjectId
-  titulo          String
-  descricao       String?
-  link_externo    String?
-  etapa           String
-  ativo           Boolean   @default(true)
-  aprovado        Boolean   @default(false)
-  data_moderacao  DateTime?
-  autor_id        String    @db.ObjectId
-  data_criacao    DateTime  @default(now()) @map("data_criacao")
-  data_atualizacao DateTime @updatedAt @map("data_atualizacao")
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  titulo           String
+  descricao        String?
+  link_externo     String?
+  etapa            String
+  ativo            Boolean   @default(true)
+  aprovado         Boolean   @default(false)
+  data_moderacao   DateTime?
+  autor_id         String    @db.ObjectId
+  data_criacao     DateTime  @default(now()) @map("data_criacao")
+  data_atualizacao DateTime  @updatedAt @map("data_atualizacao")
+  deletedAt        DateTime?
 
-  autor           Usuario   @relation(fields: [autor_id], references: [id])
-  backups         RecursoBackup[]
+  autor     Usuario         @relation(fields: [autor_id], references: [id])
+  backups   RecursoBackup[]
+  favoritos Favorito[]
 }
 
 model Noticia {
@@ -60,8 +63,9 @@ model Noticia {
   autor_id          String    @db.ObjectId
   data_publicacao   DateTime  @default(now()) @map("data_publicacao")
   data_atualizacao  DateTime  @updatedAt @map("data_atualizacao")
+  deletedAt         DateTime?
 
-  autor             Usuario   @relation(fields: [autor_id], references: [id])
+  autor Usuario @relation(fields: [autor_id], references: [id])
 }
 
 model RecursoBackup {
@@ -69,23 +73,35 @@ model RecursoBackup {
   recurso_id       String   @db.ObjectId
   dados_anteriores Json
   usuario_id       String   @db.ObjectId
-  motivo           String   // moderacao, exclusao, edicao, rollback
+  motivo           String // moderacao, exclusao, edicao, rollback
   data_backup      DateTime @default(now())
 
-  recurso          Recurso  @relation(fields: [recurso_id], references: [id])
-  usuario          Usuario  @relation(fields: [usuario_id], references: [id])
+  recurso Recurso @relation(fields: [recurso_id], references: [id])
+  usuario Usuario @relation(fields: [usuario_id], references: [id])
 }
 
 model SistemaLog {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  tipo_log    String   // admin, seguranca, login, backup, permissao
-  usuario_id  String   @db.ObjectId
-  acao        String
-  descricao   String?
-  ip_address  String?
-  user_agent  String?
-  metadata    Json?
-  data_log    DateTime @default(now())
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  tipo_log   String // admin, seguranca, login, backup, permissao
+  usuario_id String   @db.ObjectId
+  acao       String
+  descricao  String?
+  ip_address String?
+  user_agent String?
+  metadata   Json?
+  data_log   DateTime @default(now())
 
-  usuario     Usuario  @relation(fields: [usuario_id], references: [id])
+  usuario Usuario @relation(fields: [usuario_id], references: [id])
+}
+
+model Favorito {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  usuario_id String   @db.ObjectId
+  recurso_id String   @db.ObjectId
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  usuario Usuario @relation(fields: [usuario_id], references: [id])
+  recurso Recurso @relation(fields: [recurso_id], references: [id])
+
+  @@unique([usuario_id, recurso_id]) // evita duplicidade
 }

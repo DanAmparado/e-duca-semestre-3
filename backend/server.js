@@ -5,6 +5,16 @@ const flash = require('connect-flash');
 
 const app = express();
 
+const authRoutes = require('./routes/authRoutes');
+const indexRoutes = require('./routes/indexRoutes');
+const recursosRoutes = require('./routes/recursosRoutes');
+const noticiasRoutes = require('./routes/noticiasRoutes');
+const usuariosRoutes = require('./routes/usuariosRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const recomendacoesRoutes = require('./routes/recomendacoesRoutes');
+const favoritosRoutes = require('./routes/favoritosRoutes');
+
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../frontend/views'));
 app.use(express.static(path.join(__dirname, '../frontend/public')));
@@ -35,26 +45,14 @@ app.use((req, res, next) => {
     next();
 });
 
-const authRoutes = require('./routes/authRoutes');
 app.use('/auth', authRoutes);
-
-const indexRoutes = require('./routes/indexRoutes');
 app.use('/', indexRoutes);
-
-const recursosRoutes = require('./routes/recursosRoutes');
 app.use('/recursos', recursosRoutes);
-
-const noticiasRoutes = require('./routes/noticiasRoutes');
 app.use('/noticias', noticiasRoutes);
-
-const usuariosRoutes = require('./routes/usuariosRoutes');
 app.use('/', usuariosRoutes);
-
-const adminRoutes = require('./routes/adminRoutes');
 app.use('/admin', adminRoutes);
-
-const recomendacoesRoutes = require('./routes/recomendacoesRoutes');
 app.use('/recomendacoes', recomendacoesRoutes);
+app.use('/favoritos', favoritosRoutes);
 
 app.use((req, res) => {
     res.status(404).render('pages/erro', {

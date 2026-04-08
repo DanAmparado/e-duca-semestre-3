@@ -89,16 +89,31 @@
                                     </div>
                                 </div>
                                 <div class="card-footer bg-transparent">
-                                    <div class="d-flex justify-content-between">
-                                        <a href="<%= recurso.link_externo %>" 
-                                           target="_blank" 
-                                           class="btn btn-primary btn-sm">
-                                            <i class="bi bi-globe"></i> Acessar
-                                        </a>
-                                        <a href="/recursos/<%= recurso.id %>" 
-                                           class="btn btn-outline-secondary btn-sm">
-                                            <i class="bi bi-info-circle"></i> Detalhes
-                                        </a>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <a href="<%= recurso.link_externo %>" 
+                                               target="_blank" 
+                                               class="btn btn-primary btn-sm">
+                                                <i class="bi bi-globe"></i> Acessar
+                                            </a>
+                                            <a href="/recursos/<%= recurso.id %>" 
+                                               class="btn btn-outline-secondary btn-sm">
+                                                <i class="bi bi-info-circle"></i> Detalhes
+                                            </a>
+                                        </div>
+                                        <% if (user) { %>
+                                        <button class="btn btn-sm btn-outline-danger favoritar-btn" 
+                                                data-id="<%= recurso.id %>"
+                                                data-favoritado="false">
+                                            <i class="bi bi-heart"></i> Favoritar
+                                        </button>
+                                        <% } else { %>
+                                        <button class="btn btn-sm btn-outline-secondary" 
+                                                disabled
+                                                title="Faça login para favoritar">
+                                            <i class="bi bi-heart"></i> Favoritar
+                                        </button>
+                                        <% } %>
                                     </div>
                                 </div>
                             </div>
@@ -111,5 +126,40 @@
     </div>
 
     <%- include('../../partials/footer') %>
+
+    <script>
+        // Função para adicionar/remover favoritos
+        document.querySelectorAll('.favoritar-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const id = this.dataset.id;
+                const isFavoritado = this.dataset.favoritado === 'true';
+                const url = isFavoritado ? `/favoritos/${id}/remover` : `/favoritos/${id}/adicionar`;
+                const method = isFavoritado ? 'DELETE' : 'POST';
+
+                try {
+                    const response = await fetch(url, { method });
+                    if (response.ok) {
+                        if (isFavoritado) {
+                            this.dataset.favoritado = 'false';
+                            this.innerHTML = '<i class="bi bi-heart"></i> Favoritar';
+                            this.classList.remove('btn-danger');
+                            this.classList.add('btn-outline-danger');
+                        } else {
+                            this.dataset.favoritado = 'true';
+                            this.innerHTML = '<i class="bi bi-heart-fill"></i> Favoritado';
+                            this.classList.remove('btn-outline-danger');
+                            this.classList.add('btn-danger');
+                        }
+                    } else {
+                        const data = await response.json();
+                        alert(data.error || 'Erro ao favoritar');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Erro de conexão');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

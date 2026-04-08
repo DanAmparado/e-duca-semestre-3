@@ -21,8 +21,19 @@
         </nav>
 
         <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                 <h1 class="h4 mb-0"><%= recurso.titulo %></h1>
+                <% if (user) { %>
+                <button class="btn btn-sm btn-light favoritar-btn" 
+                        data-id="<%= recurso.id %>"
+                        data-favoritado="false">
+                    <i class="bi bi-heart"></i> Favoritar
+                </button>
+                <% } else { %>
+                <button class="btn btn-sm btn-secondary" disabled title="Faça login para favoritar">
+                    <i class="bi bi-heart"></i> Favoritar
+                </button>
+                <% } %>
             </div>
             <div class="card-body">
                 <div class="row">
@@ -105,12 +116,59 @@
     </div>
 
     <%- include('../../partials/footer') %>
-    
-    <!-- Script para tracking de cliques (opcional - manter se for usado) -->
+
     <script>
-        document.querySelector('a[target="_blank"]').addEventListener('click', function() {
-            // Aqui você pode adicionar analytics para track de cliques
-            // Exemplo: Google Analytics ou outro sistema de tracking
+        // Verificar se o recurso já está favoritado ao carregar a página
+        document.addEventListener('DOMContentLoaded', async () => {
+            const btn = document.querySelector('.favoritar-btn');
+            if (!btn || !btn.dataset.id) return;
+
+            const recursoId = btn.dataset.id;
+            try {
+                const response = await fetch(`/favoritos/check/${recursoId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.favoritado) {
+                        btn.dataset.favoritado = 'true';
+                        btn.innerHTML = '<i class="bi bi-heart-fill"></i> Favoritado';
+                        btn.classList.remove('btn-light');
+                        btn.classList.add('btn-danger');
+                    }
+                }
+            } catch (err) {
+                console.error('Erro ao verificar favorito:', err);
+            }
+        });
+
+        // Função para adicionar/remover favoritos
+        document.querySelector('.favoritar-btn')?.addEventListener('click', async function() {
+            const id = this.dataset.id;
+            const isFavoritado = this.dataset.favoritado === 'true';
+            const url = isFavoritado ? `/favoritos/${id}/remover` : `/favoritos/${id}/adicionar`;
+            const method = isFavoritado ? 'DELETE' : 'POST';
+
+            try {
+                const response = await fetch(url, { method });
+                if (response.ok) {
+                    if (isFavoritado) {
+                        this.dataset.favoritado = 'false';
+                        this.innerHTML = '<i class="bi bi-heart"></i> Favoritar';
+                        this.classList.remove('btn-danger');
+                        this.classList.add('btn-light');
+                    } else {
+                        this.dataset.favoritado = 'true';
+                        this.innerHTML = '<i class="bi bi-heart-fill"></i> Favoritado';
+                        this.classList.remove('btn-light');
+                        this.classList.add('btn-danger');
+                    }
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Erro ao favoritar');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Erro de conexão');
+            }
         });
     </script>
 </body>

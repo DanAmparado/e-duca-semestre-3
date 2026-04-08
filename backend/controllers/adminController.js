@@ -2,7 +2,6 @@ const Usuario = require('../models/Usuario');
 const Recurso = require('../models/Recurso');
 const Noticia = require('../models/Noticia');
 const SistemaLog = require('../models/SistemaLog');
-const RecursoBackup = require('../models/RecursoBackup');
 const prisma = require('../lib/prisma');
 
 const adminController = {
@@ -227,19 +226,6 @@ const adminController = {
                 });
             }
 
-            await RecursoBackup.criar({
-                recurso_id: id,
-                dados_anteriores: {
-                    titulo: recursoOriginal.titulo,
-                    descricao: recursoOriginal.descricao,
-                    link_externo: recursoOriginal.link_externo,
-                    etapa: recursoOriginal.etapa,
-                    ativo: recursoOriginal.ativo
-                },
-                usuario_id: req.session.user.id,
-                motivo: 'edicao'
-            });
-
             await Recurso.atualizar(id, {
                 titulo,
                 descricao: descricao || null,
@@ -276,21 +262,8 @@ const adminController = {
                 return res.status(404).json({ success: false, error: 'Recurso não encontrado' });
             }
 
-            await RecursoBackup.criar({
-                recurso_id: id,
-                dados_anteriores: {
-                    titulo: recursoOriginal.titulo,
-                    descricao: recursoOriginal.descricao,
-                    link_externo: recursoOriginal.link_externo,
-                    etapa: recursoOriginal.etapa,
-                    ativo: recursoOriginal.ativo
-                },
-                usuario_id: req.session.user.id,
-                motivo: 'exclusao'
-            });
-
-            await Recurso.desativar(id);
-
+            await Recurso.excluirPermanentemente(id);
+            
             await SistemaLog.registrar({
                 tipo_log: 'admin',
                 usuario_id: req.session.user.id,

@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -29,7 +23,6 @@ model Usuario {
 
   recursos  Recurso[]
   noticias  Noticia[]
-  backups   RecursoBackup[]
   logs      SistemaLog[]
   favoritos Favorito[]
 }
@@ -49,7 +42,6 @@ model Recurso {
   deletedAt        DateTime?
 
   autor     Usuario         @relation(fields: [autor_id], references: [id])
-  backups   RecursoBackup[]
   favoritos Favorito[]
 }
 
@@ -66,18 +58,6 @@ model Noticia {
   deletedAt         DateTime?
 
   autor Usuario @relation(fields: [autor_id], references: [id])
-}
-
-model RecursoBackup {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  recurso_id       String   @db.ObjectId
-  dados_anteriores Json
-  usuario_id       String   @db.ObjectId
-  motivo           String // moderacao, exclusao, edicao, rollback
-  data_backup      DateTime @default(now())
-
-  recurso Recurso @relation(fields: [recurso_id], references: [id])
-  usuario Usuario @relation(fields: [usuario_id], references: [id])
 }
 
 model SistemaLog {

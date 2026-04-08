@@ -114,8 +114,8 @@
                                             <!-- Ativar/Desativar -->
                                             <button class="btn btn-sm btn-outline-secondary btn-toggle-status" 
                                                     data-id="<%= recurso.id %>" 
-                                                    data-status="<%= recurso.ativo === 1 %>">
-                                                <%= recurso.ativo === 1 ? 'Desativar' : 'Ativar' %>
+                                                    data-status="<%= recurso.ativo %>">
+                                                <%= recurso.ativo ? 'Desativar' : 'Ativar' %>
                                             </button>
 
                                             <!-- Visualizar -->

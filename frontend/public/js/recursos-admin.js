@@ -1,67 +1,53 @@
-// Versão SIMPLIFICADA - só o essencial
 document.addEventListener('DOMContentLoaded', function() {
-    // Botão Ativar/Desativar
-    document.addEventListener('click', function(e) {
+    // Toggle status
+    document.addEventListener('click', async function(e) {
         if (e.target.classList.contains('btn-toggle-status')) {
             const button = e.target;
-            const id = button.getAttribute('data-id');
-            const currentStatus = button.getAttribute('data-status') === 'true';
+            const id = button.dataset.id;
+            const currentStatus = button.dataset.status === 'true';
+            const action = currentStatus ? 'desativar' : 'ativar';
             
-            if (confirm(`Tem certeza que deseja ${currentStatus ? 'desativar' : 'ativar'} este recurso?`)) {
-                toggleRecursoStatus(id, currentStatus);
+            if (!confirm(`Tem certeza que deseja ${action} este recurso?`)) return;
+            
+            try {
+                const response = await fetch(`/admin/recursos/${id}/toggle`, { method: 'POST' });
+                const data = await response.json();
+                if (data.success) {
+                    // Atualiza o texto do botão e o dataset
+                    button.textContent = data.novoStatus ? 'Desativar' : 'Ativar';
+                    button.dataset.status = data.novoStatus;
+                    // Atualiza o badge de status na tabela
+                    const statusCell = button.closest('tr').querySelector('td:nth-child(5)');
+                    statusCell.innerHTML = data.novoStatus 
+                        ? '<span class="badge bg-success">Ativo</span>' 
+                        : '<span class="badge bg-danger">Inativo</span>';
+                } else {
+                    alert(data.error || 'Erro ao alterar status');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Erro de conexão');
             }
         }
         
-        // Botão Excluir
+        // Excluir recurso
         if (e.target.classList.contains('btn-excluir')) {
-            const id = e.target.getAttribute('data-id');
-            if (confirm('Tem certeza que deseja excluir este recurso?')) {
-                excluirRecurso(id);
+            const id = e.target.dataset.id;
+            if (!confirm('Excluir este recurso permanentemente? Esta ação não pode ser desfeita.')) return;
+            
+            try {
+                const response = await fetch(`/admin/recursos/excluir/${id}`, { method: 'DELETE' });
+                const data = await response.json();
+                if (data.success) {
+                    // Remove a linha da tabela
+                    e.target.closest('tr').remove();
+                } else {
+                    alert(data.error || 'Erro ao excluir');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Erro de conexão');
             }
         }
     });
 });
-
-function toggleRecursoStatus(id, currentStatus) {
-    fetch(`/admin/recursos/${id}/toggle`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-            location.reload(); // Recarrega a página
-        } else {
-            alert('Erro: ' + data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Erro:', error);
-        alert('Erro ao processar solicitação');
-    });
-}
-
-function excluirRecurso(id) {
-    fetch(`/admin/recursos/excluir/${id}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Recurso excluído com sucesso!');
-            location.reload();
-        } else {
-            alert('Erro: ' + data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Erro:', error);
-        alert('Erro ao excluir recurso');
-    });
-}

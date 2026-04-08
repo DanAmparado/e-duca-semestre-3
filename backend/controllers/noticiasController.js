@@ -92,7 +92,8 @@ const noticiasController = {
             user: req.session.user,
             noticia: {},
             title: 'Criar Notícia',
-            currentPage: 'noticias'
+            currentPage: 'noticias',
+            erro: null
         });
     },
 

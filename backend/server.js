@@ -2,25 +2,32 @@ const express = require('express');
 const session = require('express-session');
 const path = require('path');
 const flash = require('connect-flash');
+const cors = require('cors');
 
 const app = express();
 
-const authRoutes = require('./routes/authRoutes');
-const indexRoutes = require('./routes/indexRoutes');
-const recursosRoutes = require('./routes/recursosRoutes');
-const noticiasRoutes = require('./routes/noticiasRoutes');
-const usuariosRoutes = require('./routes/usuariosRoutes');
-const adminRoutes = require('./routes/adminRoutes');
-const recomendacoesRoutes = require('./routes/recomendacoesRoutes');
-const favoritosRoutes = require('./routes/favoritosRoutes');
+// ==================== MIDDLEWARES GLOBAIS ====================
+app.use(cors()); // permite requisições do frontend React
+app.use(express.json());  // IMPORTANTE: parse de JSON no body
+app.use(express.urlencoded({ extended: true }));
 
+// ==================== ROTAS DA API (versão 1) ====================
+const apiAuth = require('./api/v1/auth');
+const apiRecursos = require('./api/v1/recursos');
+const apiFavoritos = require('./api/v1/favoritos');
+const apiNoticias = require('./api/v1/noticias');
 
+app.use('/api/v1/noticias', apiNoticias);
+app.use('/api/v1/auth', apiAuth);
+app.use('/api/v1/recursos', apiRecursos);
+app.use('/api/v1/favoritos', apiFavoritos);
+
+// ==================== CONFIGURAÇÕES DAS VIEWS (EJS) ====================
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../frontend/views'));
 app.use(express.static(path.join(__dirname, '../frontend/public')));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
+// ==================== SESSÃO E FLASH (para as rotas antigas) ====================
 app.use(session({
     secret: 'educa-secret',
     resave: false,
@@ -31,7 +38,6 @@ app.use(session({
         maxAge: 24 * 60 * 60 * 1000
     }
 }));
-
 app.use(flash());
 
 app.use((req, res, next) => {
@@ -45,6 +51,16 @@ app.use((req, res, next) => {
     next();
 });
 
+// ==================== ROTAS ANTIGAS (EJS) ====================
+const authRoutes = require('./routes/authRoutes');
+const indexRoutes = require('./routes/indexRoutes');
+const recursosRoutes = require('./routes/recursosRoutes');
+const noticiasRoutes = require('./routes/noticiasRoutes');
+const usuariosRoutes = require('./routes/usuariosRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const recomendacoesRoutes = require('./routes/recomendacoesRoutes');
+const favoritosRoutes = require('./routes/favoritosRoutes');
+
 app.use('/auth', authRoutes);
 app.use('/', indexRoutes);
 app.use('/recursos', recursosRoutes);
@@ -54,6 +70,7 @@ app.use('/admin', adminRoutes);
 app.use('/recomendacoes', recomendacoesRoutes);
 app.use('/favoritos', favoritosRoutes);
 
+// ==================== TRATAMENTO DE ERROS ====================
 app.use((req, res) => {
     res.status(404).render('pages/erro', {
         erro: 'Página não encontrada',

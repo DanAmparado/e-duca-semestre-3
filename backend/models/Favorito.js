@@ -35,7 +35,11 @@ class Favorito {
                 include: { recurso: true },
                 orderBy: { createdAt: 'desc' }
             });
-            return favoritos.map(f => f.recurso);
+            const map = new Map();
+            favoritos.forEach(f => {
+                if (!map.has(f.recurso.id)) map.set(f.recurso.id, f.recurso);
+            });
+            return Array.from(map.values());
         } catch (error) {
             console.error('Erro ao listar favoritos:', error);
             return [];

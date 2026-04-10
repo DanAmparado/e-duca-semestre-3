@@ -44,16 +44,13 @@ class Recurso {
         try {
             const where = {
                 OR: [
-                    { titulo: { contains: termo } },
-                    { descricao: { contains: termo } },
-                    { etapa: { contains: termo } }
+                    { titulo: { contains: termo, mode: 'insensitive' } },
+                    { descricao: { contains: termo, mode: 'insensitive' } },
+                    { etapa: { contains: termo, mode: 'insensitive' } }
                 ],
                 ...(apenasAtivos && { ativo: true })
             };
-            return await prisma.recurso.findMany({
-                where,
-                orderBy: { titulo: 'asc' }
-            });
+            return await prisma.recurso.findMany({ where, orderBy: { titulo: 'asc' } });
         } catch (error) {
             console.error('Erro em Recurso.buscarPorTermo:', error);
             throw error;

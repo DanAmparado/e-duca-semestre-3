@@ -14,7 +14,7 @@ function Login() {
             const response = await api.post('/auth/login', { email, senha });
             console.log('Resposta:', response.data);
             localStorage.setItem('token', response.data.token);
-            navigate('/recursos');
+            window.location.href = '/';
         } catch (err) {
             console.error('Erro completo:', err);
             if (err.response) {

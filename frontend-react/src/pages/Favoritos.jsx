@@ -6,31 +6,33 @@ function Favoritos() {
     const [favoritos, setFavoritos] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const fetchFavoritos = async () => {
+        try {
+            const res = await api.get('/favoritos');
+            setFavoritos(res.data.favoritos);
+        } catch (err) {
+            console.error(err);
+            alert('Erro ao carregar favoritos');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchFavoritos = async () => {
-            try {
-                const res = await api.get('/favoritos');
-                setFavoritos(res.data.favoritos);
-            } catch (err) {
-                console.error(err);
-                alert('Erro ao carregar favoritos');
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchFavoritos();
     }, []);
 
     const removerFavorito = async (id) => {
         try {
             await api.delete(`/favoritos/${id}`);
-            setFavoritos(favoritos.filter(f => f.id !== id));
+            await fetchFavoritos();
         } catch (err) {
+            console.error(err);
             alert('Erro ao remover favorito');
         }
     };
 
-    if (loading) return <div>Carregando...</div>;
+    if (loading) return <div className="text-center mt-5">Carregando...</div>;
 
     return (
         <div className="container mt-4">

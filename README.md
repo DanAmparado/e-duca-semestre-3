@@ -2,14 +2,14 @@
 
 E-DUCA é uma plataforma que democratiza o acesso à educação, conectando alunos a recursos educacionais, notícias e recomendações personalizadas. Desenvolvido com Node.js, React, Prisma e MongoDB.
 
-## 📋 Pré-requisitos
+## Pré-requisitos
 
 - Node.js (v18 ou superior)
 - npm (v9+)
 - MongoDB Atlas (ou MongoDB local)
 - Git
 
-## 🚀 Como executar o projeto localmente
+## Como executar o projeto localmente
 
 ### 1. Clone o repositório
 ```bash

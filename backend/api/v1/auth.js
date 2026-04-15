@@ -2,11 +2,10 @@ const express = require('express');
 const router = express.Router();
 const Usuario = require('../../models/Usuario');
 const jwt = require('jsonwebtoken');
-const jwtAuth = require('../../middleware/jwtAuth'); // para rotas protegidas
+const jwtAuth = require('../../middleware/jwtAuth');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'educa-jwt-secret-change-this';
 
-// POST /api/v1/auth/login
 router.post('/login', async (req, res) => {
     const { email, senha } = req.body;
     if (!email || !senha) {
@@ -26,14 +25,21 @@ router.post('/login', async (req, res) => {
             JWT_SECRET,
             { expiresIn: '7d' }
         );
-        res.json({ token, user: { id: usuario.id, email: usuario.email, tipo: usuario.tipo } });
+        res.json({ 
+            token, 
+            user: { 
+                id: usuario.id, 
+                email: usuario.email, 
+                tipo: usuario.tipo,
+                is_admin: usuario.is_admin
+            } 
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Erro interno do servidor' });
     }
 });
 
-// POST /api/v1/auth/register
 router.post('/register', async (req, res) => {
     const { email, senha, cidade, estado, etapa_preferida } = req.body;
     try {
@@ -48,7 +54,6 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// GET /api/v1/auth/perfil – dados do perfil (protegido)
 router.get('/perfil', jwtAuth, async (req, res) => {
     try {
         const usuario = await Usuario.buscarPorId(req.userId);
@@ -63,7 +68,6 @@ router.get('/perfil', jwtAuth, async (req, res) => {
     }
 });
 
-// PUT /api/v1/auth/perfil – atualizar dados (cidade, estado, etapa_preferida)
 router.put('/perfil', jwtAuth, async (req, res) => {
     const { cidade, estado, etapa_preferida } = req.body;
     try {
@@ -80,7 +84,6 @@ router.put('/perfil', jwtAuth, async (req, res) => {
     }
 });
 
-// PUT /api/v1/auth/alterar-senha – alterar senha
 router.put('/alterar-senha', jwtAuth, async (req, res) => {
     const { senhaAtual, novaSenha } = req.body;
     if (!senhaAtual || !novaSenha) {

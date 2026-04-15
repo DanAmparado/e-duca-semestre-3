@@ -93,7 +93,10 @@ function DetalhesRecurso() {
                     </div>
                 </div>
                 <div className="card-footer bg-transparent">
-                    <Link to="/recursos" className="btn btn-outline-secondary">← Voltar para Recursos</Link>
+                    <div className="d-flex justify-content-between align-items-center">
+                        <Link to="/recursos" className="btn btn-outline-secondary">← Voltar para Recursos</Link>
+                        <small className="text-muted">ID: {recurso.id}</small>
+                    </div>
                 </div>
             </div>
         </>

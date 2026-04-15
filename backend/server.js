@@ -16,7 +16,9 @@ const apiAuth = require('./api/v1/auth');
 const apiRecursos = require('./api/v1/recursos');
 const apiFavoritos = require('./api/v1/favoritos');
 const apiNoticias = require('./api/v1/noticias');
+const apiAdmin = require('./api/v1/admin');
 
+app.use('/api/v1/admin', apiAdmin);
 app.use('/api/v1/noticias', apiNoticias);
 app.use('/api/v1/auth', apiAuth);
 app.use('/api/v1/recursos', apiRecursos);

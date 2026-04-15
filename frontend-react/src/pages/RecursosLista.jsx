@@ -1,18 +1,39 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import api from '../services/api';
 
 function RecursosLista() {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const queryParams = new URLSearchParams(location.search);
+    const etapaParam = queryParams.get('etapa');
+    
     const [recursos, setRecursos] = useState([]);
     const [favoritosIds, setFavoritosIds] = useState([]);
     const [loading, setLoading] = useState(true);
     const [termoBusca, setTermoBusca] = useState('');
-    const navigate = useNavigate();
+    const [tituloPagina, setTituloPagina] = useState('Recursos Educacionais');
     const token = localStorage.getItem('token');
+
+    // Mapeamento de nomes de etapa para exibição
+    const etapasNomes = {
+        basica: 'Educação Básica',
+        profissional: 'Educação Profissional',
+        superior: 'Ensino Superior'
+    };
 
     const fetchRecursos = async () => {
         try {
-            const res = await api.get('/recursos?limit=all');
+            let url = '/recursos?limit=all';
+            if (etapaParam && etapasNomes[etapaParam]) {
+                const etapaMap = { basica: 'Basico', profissional: 'Tecnico', superior: 'Superior' };
+                const etapaBanco = etapaMap[etapaParam];
+                url = `/recursos/etapa/${etapaBanco}`;
+                setTituloPagina(etapasNomes[etapaParam]);
+            } else {
+                setTituloPagina('Recursos Educacionais');
+            }
+            const res = await api.get(url);
             setRecursos(res.data.recursos);
         } catch (err) {
             console.error(err);
@@ -36,7 +57,7 @@ function RecursosLista() {
     useEffect(() => {
         fetchRecursos();
         fetchFavoritos();
-    }, []);
+    }, [location.search]); // recarrega quando a query string mudar
 
     const handleBusca = (e) => {
         e.preventDefault();
@@ -68,7 +89,7 @@ function RecursosLista() {
 
     return (
         <>
-            <h1 className="mb-4">Recursos Educacionais</h1>
+            <h1 className="mb-4">{tituloPagina}</h1>
             <div className="card mb-4">
                 <div className="card-body">
                     <h5 className="card-title"><i className="bi bi-search me-2"></i>Encontrar Recursos</h5>
@@ -86,7 +107,7 @@ function RecursosLista() {
             </div>
 
             {recursos.length === 0 ? (
-                <div className="alert alert-info">Nenhum recurso encontrado.</div>
+                <div className="alert alert-info">Nenhum recurso encontrado para esta etapa.</div>
             ) : (
                 <div className="row">
                     {recursos.map(recurso => {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
-import { useNavigate } from 'react-router-dom';
 
 function Login() {
     const [email, setEmail] = useState('');
@@ -9,27 +9,19 @@ function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Tentando login com:', { email, senha }); // depuração
         try {
             const response = await api.post('/auth/login', { email, senha });
-            console.log('Resposta:', response.data);
             localStorage.setItem('token', response.data.token);
+            localStorage.setItem('user', JSON.stringify(response.data.user));
             window.location.href = '/';
         } catch (err) {
-            console.error('Erro completo:', err);
-            if (err.response) {
-                alert(`Erro ${err.response.status}: ${err.response.data.error || err.response.data.message}`);
-            } else if (err.request) {
-                alert('Servidor não respondeu. Verifique se o backend está rodando na porta 3000.');
-            } else {
-                alert('Erro ao configurar requisição: ' + err.message);
-            }
+            alert(err.response?.data?.error || 'Erro ao fazer login');
         }
     };
 
     return (
-        <div style={{ maxWidth: 400, margin: '50px auto' }}>
-            <h2>Login</h2>
+        <div className="container mt-5" style={{ maxWidth: 400 }}>
+            <h2>Entrar na Conta</h2>
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                     <label>Email</label>
@@ -40,9 +32,11 @@ function Login() {
                     <input type="password" className="form-control" value={senha} onChange={e => setSenha(e.target.value)} required />
                 </div>
                 <button type="submit" className="btn btn-primary w-100">Entrar</button>
+                <div className="mt-3 text-center">
+                    <Link to="/cadastro">Não tem conta? Cadastre-se</Link>
+                </div>
             </form>
         </div>
     );
 }
-
 export default Login;

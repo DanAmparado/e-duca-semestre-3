@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Iniciando seed do banco de dados...');
 
-  // 1. Criar usuário admin (se não existir)
+  // 1. Criar usuário admin
   const adminEmail = 'admin@educa.com';
   const adminExistente = await prisma.usuario.findUnique({ where: { email: adminEmail } });
   if (!adminExistente) {
@@ -47,7 +47,7 @@ async function main() {
     console.log('Usuário comum já existe, pulando criação.');
   }
 
-  // 3. (Opcional) Adicionar alguns recursos de exemplo
+  // 3. Adicionar recursos de exemplo
   const recursosExemplo = [
     {
       titulo: 'Khan Academy - Matemática',
@@ -79,7 +79,7 @@ async function main() {
     }
   }
 
-  // 4. (Opcional) Notícia de exemplo
+  // 4. Notícia de exemplo
   const noticiaExistente = await prisma.noticia.findFirst({ where: { titulo: 'Bem-vindo ao E-DUCA!' } });
   if (!noticiaExistente) {
     await prisma.noticia.create({
